@@ -1,0 +1,281 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PreçoCerto Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: moldura de celular centralizada no desktop, tela cheia no celular. Tokens = constants/theme.ts */
+:root{
+  --bg:#F1F4EE;--surface:#FFFFFF;--muted:#EDF1EA;--glass:rgba(255,255,255,.62);--glassB:rgba(255,255,255,.85);
+  --text:#121A14;--text2:#56635A;--text3:#8B978E;--primary:#2FA552;--primaryD:#1D7E3B;--primaryS:#E2F4E6;
+  --danger:#E5484D;--dangerS:#FDECEC;--warn:#E8A317;--warnS:#FDF4DF;--ink:#141A16;--border:#E2E8DE;
+  --hero:linear-gradient(150deg,#3FB862,#2A9A4C 55%,#1F7D3D);--page:linear-gradient(180deg,#DCEFD9,#EEF4EA 40%,#F1F4EE);
+  --outer:#DDE5D8;--font:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--outer);font-family:var(--font);color:var(--text);display:flex;justify-content:center;align-items:center}
+.phone{width:100%;max-width:400px;height:100%;max-height:860px;background:var(--page);position:relative;overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:520px){.phone{border-radius:44px;border:10px solid #141A16;height:calc(100% - 32px);box-shadow:0 30px 80px rgba(27,58,36,.25)}}
+.scroll{flex:1;overflow-y:auto;padding:18px 16px 120px;display:flex;flex-direction:column;gap:14px}
+.scroll.noTab{padding-bottom:28px}
+h1,h2,h3,p{margin:0}
+.title{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.heading{font-size:17px;font-weight:700}
+.cap{font-size:12.5px;color:var(--text2)}
+.label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.price{font-weight:800;font-variant-numeric:tabular-nums}
+.big{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.row{display:flex;align-items:center;gap:10px}.flex{flex:1;min-width:0}
+.glass{background:var(--glass);border:1px solid var(--glassB);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:18px;box-shadow:0 8px 18px rgba(27,58,36,.08)}
+.glassDark{background:rgba(20,26,22,.22);border:1px solid rgba(255,255,255,.22);border-radius:14px;color:#fff}
+.hero{background:var(--hero);border-radius:26px;padding:18px;color:#fff;display:flex;flex-direction:column;gap:14px;box-shadow:0 14px 30px rgba(29,126,59,.3)}
+.hero .cap{color:rgba(255,255,255,.85)}
+.pill{background:#fff;color:var(--primaryD);border:0;border-radius:999px;padding:13px 18px;font:700 15px var(--font);cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px}
+.btn{border:0;border-radius:16px;padding:14px;font:700 15px var(--font);cursor:pointer;width:100%}
+.btn.primary{background:var(--hero);color:#fff}.btn.ghost{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn.danger{background:var(--dangerS);color:var(--danger)}
+button:focus-visible,.tap:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.round{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid var(--glassB);cursor:pointer}
+.logo{width:44px;height:44px;border-radius:14px;background:var(--hero);display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{padding:12px;display:flex;flex-direction:column;gap:4px}
+.stat .ic{width:28px;height:28px;border-radius:9px;background:var(--primaryS);display:grid;place-items:center;color:var(--primaryD)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.step{padding:10px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
+.card{padding:14px;display:flex;flex-direction:column;gap:8px}
+.item{padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.thumb{width:46px;height:46px;border-radius:12px;background:var(--muted);display:grid;place-items:center;font-size:22px;flex:none}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;font-size:11.5px;font-weight:700}
+.chip.ok{background:var(--primaryS);color:var(--primaryD)}.chip.bad{background:var(--dangerS);color:var(--danger)}.chip.warn{background:var(--warnS);color:#9A6A05}
+.header{display:flex;align-items:center;gap:10px}
+.bar{height:8px;background:var(--muted);border-radius:99px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--hero);border-radius:99px;transition:width .25s}
+.check{width:30px;height:30px;border-radius:10px;border:2px solid var(--border);display:grid;place-items:center;flex:none;background:#fff;color:#fff}
+.check.on{background:var(--primary);border-color:var(--primary)}.check.wrong{background:var(--danger);border-color:var(--danger)}
+.done{text-decoration:line-through;color:var(--text3)}
+.link{background:none;border:0;padding:0;font:600 12px var(--font);color:var(--danger);cursor:pointer}
+.tabbar{position:absolute;left:0;right:0;bottom:0;padding:0 14px calc(12px + env(safe-area-inset-bottom,0px))}
+.tabbar .glass{border-radius:32px;display:flex;padding:8px 0}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--text3);background:none;border:0;cursor:pointer;font-family:var(--font)}
+.tab.on{color:var(--primaryD);font-weight:700}.slot{width:72px}
+.fab{position:absolute;left:50%;transform:translateX(-50%);top:-24px;width:72px;height:72px;border-radius:50%;border:5px solid var(--bg);background:var(--hero);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 24px rgba(29,126,59,.4)}
+.cam{position:absolute;inset:0;background:#0d120f;color:#fff;display:flex;flex-direction:column}
+.cam .view{flex:1;position:relative;background:radial-gradient(circle at 50% 40%,#3a4a3e,#0d120f 70%);display:grid;place-items:center}
+.frame{width:78%;aspect-ratio:4/3;max-width:100%;border:3px solid rgba(255,255,255,.9);border-radius:22px;display:grid;place-items:center;position:relative}
+.tag{background:#FFE34D;color:#111;border-radius:6px;padding:12px 16px;text-align:left;width:80%;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.shoot{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:rgba(255,255,255,.25);cursor:pointer}
+.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;font-weight:700;color:var(--text2)}
+.field input,.field select{font:600 15px var(--font);padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:#fff;color:var(--text)}
+.scan{position:absolute;left:10%;right:10%;height:3px;background:#6CC04A;box-shadow:0 0 18px #6CC04A;animation:scan 1.6s ease-in-out infinite}
+@keyframes scan{0%{top:12%}50%{top:85%}100%{top:12%}}
+@media(prefers-reduced-motion:reduce){.scan{animation:none;top:50%}}
+.toast{position:absolute;left:16px;right:16px;top:16px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:13.5px;font-weight:600;z-index:20}
+.modal{position:absolute;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column}
+.chart{width:100%;height:120px}
+.banner{font-size:11.5px;color:var(--text2);text-align:center;padding:6px 10px;background:rgba(255,255,255,.5);border-bottom:1px solid var(--border)}
+svg{flex:none}
+</style>
+</head><body>
+
+<div class="phone" id="phone">
+  <div class="banner">Prévia em HTML · dados de exemplo · sem backend</div>
+  <div id="root" style="flex:1;position:relative;display:flex;flex-direction:column;min-height:0"></div>
+</div>
+
+<script>
+const I = {
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/>',
+  trend:'<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
+  scan:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  check:'<path d="M5 12l5 5 9-10"/>',
+  alert:'<path d="M12 7v6M12 17h.01"/>',
+  bag:'<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h2"/>',
+  warn:'<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>',
+  store:'<path d="M4 9l1-5h14l1 5M4 9v11h16V9M4 9h16"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+  img:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 5 5 3-3 5 5"/>',
+  cart:'<path d="M3 4h2l2 12h11l2-8H7"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/>',
+  star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+};
+const ic=(n,s=20,c='currentColor')=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`;
+const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+const CATALOG=[
+  {name:'Arroz Tio João 5kg',emoji:'🍚',price:29.90,promo:null},
+  {name:'Coca-Cola 2L',emoji:'🥤',price:11.49,promo:'Leve 3 pague 2'},
+  {name:'Café Pilão 500g',emoji:'☕',price:24.98,promo:'De R$ 27,90 por R$ 24,98'},
+  {name:'Leite Italac Integral 1L',emoji:'🥛',price:5.79,promo:null},
+  {name:'Feijão Camil Carioca 1kg',emoji:'🫘',price:8.49,promo:null},
+  {name:'Banana Prata (kg)',emoji:'🍌',price:6.99,promo:'Preço por kg'},
+];
+const S={
+  tab:'home',screen:'tabs',toast:null,
+  shopping:{market:'Supermercado BH · Centro',items:[
+    {...CATALOG[0],qty:1,status:null,charged:null,time:'18:42'},
+    {...CATALOG[2],qty:1,status:null,charged:null,time:'18:44'},
+    {...CATALOG[3],qty:6,status:null,charged:null,time:'18:47'},
+  ]},
+  history:[
+    {market:'Atacadão',date:'28/09',total:312.40,paid:318.89,div:2},
+    {market:'Supermercado BH',date:'21/09',total:187.15,paid:187.15,div:0},
+    {market:'Villefort',date:'14/09',total:96.30,paid:96.30,div:0},
+  ],
+  draft:null,proof:null,
+};
+const total=()=>S.shopping.items.reduce((s,i)=>s+i.price*i.qty,0);
+const go=(screen,extra={})=>{Object.assign(S,{screen},extra);render()};
+const toast=m=>{S.toast=m;render();clearTimeout(toast.t);toast.t=setTimeout(()=>{S.toast=null;render()},2200)};
+
+function tabbar(){
+  const t=(k,n,l)=>`<button class="tab ${S.tab===k?'on':''}" onclick="S.tab='${k}';go('tabs')">${ic(n,23)}${l}</button>`;
+  return `<div class="tabbar"><div class="glass" style="position:relative">${t('home','home','Início')}${t('history','receipt','Histórico')}<div class="slot"></div>${t('prices','trend','Preços')}${t('profile','user','Conta')}
+  <button class="fab" aria-label="Fotografar etiqueta" onclick="go('camera')">${ic('scan',28,'#fff')}</button></div></div>`;
+}
+const header=(t,back='tabs')=>`<div class="header"><button class="round" aria-label="Voltar" onclick="go('${back}')">${ic('back')}</button><h2 class="heading flex">${t}</h2></div>`;
+
+function home(){
+  const n=S.shopping.items.length;
+  return `<div class="row"><div class="logo">P</div><div class="flex"><h1 class="title">Olá 👋</h1><p class="cap">Pronto para sua próxima compra?</p></div><button class="round" aria-label="Conta" onclick="S.tab='profile';go('tabs')">${ic('user')}</button></div>
+  <div class="hero">
+    <div class="row"><div class="flex"><h2 class="title" style="font-size:19px">Compra em andamento</h2><p class="cap row" style="gap:5px">${ic('store',14)}${S.shopping.market}</p></div><span class="glassDark chip">${n} itens</span></div>
+    <div><p class="label" style="color:rgba(255,255,255,.7)">Total até agora</p><p class="big">${brl(total())}</p></div>
+    <button class="pill" onclick="go('shopping')">Continuar compra</button>
+  </div>
+  <div class="stats">
+    <div class="glass stat"><span class="ic">${ic('bag',16)}</span><span class="price">4</span><span class="cap">Compras no mês</span></div>
+    <div class="glass stat"><span class="ic">${ic('wallet',16)}</span><span class="price">${brl(602.34)}</span><span class="cap">Gasto no mês</span></div>
+    <div class="glass stat"><span class="ic">${ic('warn',16)}</span><span class="price" style="color:var(--danger)">2</span><span class="cap">Divergências</span></div>
+  </div>
+  <div class="glass card"><div class="row"><span class="flex cap"><b style="color:var(--text)">Plano gratuito</b> · 23 de 80 produtos este mês</span><span class="chip ok">Premium</span></div><div class="bar"><i style="width:29%"></i></div></div>
+  <div class="row"><h3 class="heading flex">Últimas compras</h3><button class="link" style="color:var(--primaryD);font-size:13px" onclick="S.tab='history';go('tabs')">Ver todas</button></div>
+  ${S.history.map(histCard).join('')}`;
+}
+function histCard(h){
+  return `<div class="glass item" onclick="go('conference')" tabindex="0"><div class="thumb">${ic('cart',22,'var(--primaryD)')}</div><div class="flex"><p style="font-weight:700">${h.market}</p><p class="cap">${h.date} · esperado ${brl(h.total)}</p></div><div style="text-align:right"><p class="price">${brl(h.paid)}</p>${h.div?`<span class="chip bad">${h.div} divergências</span>`:'<span class="chip ok">Tudo certo</span>'}</div></div>`;
+}
+function history(){return `<h1 class="title">Histórico</h1><p class="cap">Abra uma compra para ver a conferência completa.</p>${S.history.map(histCard).join('')}`}
+function prices(){
+  const pts=[27.9,26.5,28.4,24.98,25.9,24.98];const max=29,min=24;
+  const xy=pts.map((p,i)=>[10+i*(280/5),100-(p-min)/(max-min)*80]);
+  const d=xy.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  return `<h1 class="title">Preços</h1>
+  <div class="glass card"><div class="row"><div class="thumb">☕</div><div class="flex"><p style="font-weight:700">Café Pilão 500g</p><p class="cap">Últimos 6 registros</p></div><span class="chip warn">Premium</span></div>
+  <svg class="chart" viewBox="0 0 300 120" preserveAspectRatio="none"><path d="${d} L290 110 L10 110Z" fill="rgba(47,165,82,.12)"/><path d="${d}" fill="none" stroke="#2FA552" stroke-width="2.5"/>${xy.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#1D7E3B"/>`).join('')}</svg>
+  <div class="stats"><div><p class="cap">Atual</p><p class="price">${brl(24.98)}</p></div><div><p class="cap">Média</p><p class="price">${brl(26.44)}</p></div><div><p class="cap">Menor</p><p class="price" style="color:var(--primaryD)">${brl(24.98)}</p></div></div></div>
+  <h3 class="heading">Comparação entre mercados</h3>
+  ${[['Atacadão',23.49,true],['Supermercado BH',24.98],['Villefort',26.90]].map(([m,p,b])=>`<div class="glass item"><div class="thumb">${ic('store',20,'var(--primaryD)')}</div><div class="flex"><p style="font-weight:700">${m}</p>${b?'<span class="chip ok">🏆 Melhor preço</span>':''}</div><p class="price">${brl(p)}</p></div>`).join('')}`;
+}
+function profile(){
+  return `<h1 class="title">Conta</h1>
+  <div class="glass card"><div class="row"><div class="logo" style="background:var(--muted);color:var(--text2)">${ic('user')}</div><div class="flex"><p style="font-weight:700">Visitante</p><p class="cap">Entrou sem cadastro. Crie uma conta para não perder o histórico.</p></div></div><button class="btn primary">Criar conta com e-mail</button></div>
+  <div class="hero"><p class="row" style="gap:6px;font-weight:800">${ic('star',18,'#fff')} PreçoCerto Premium</p><p class="cap">Leitura de prateleira inteira, histórico de preços, comparação entre mercados e produtos ilimitados.</p><button class="pill">Ver planos</button></div>`;
+}
+
+function shopping(){
+  const it=S.shopping.items;
+  return `${header('Compra atual')}
+  <div class="glass card"><p class="cap row" style="gap:5px">${ic('store',14)}${S.shopping.market} · hoje</p><p class="label" style="color:var(--text3)">Total estimado</p><p class="big">${brl(total())}</p><p class="cap">${it.length} produtos fotografados</p></div>
+  ${it.map((x,i)=>`<div class="glass item"><div class="thumb">${x.emoji}</div><div class="flex"><p style="font-weight:700">${x.name}</p><p class="cap">${x.qty>1?x.qty+'x · ':''}${brl(x.price)}${x.promo?' · '+x.promo:''}</p></div><div style="text-align:right"><p class="price">${brl(x.price*x.qty)}</p><button class="link" onclick="S.shopping.items.splice(${i},1);toast('Item removido');">Remover</button></div></div>`).join('')}
+  <button class="btn ghost row" style="justify-content:center" onclick="go('camera',{back:'shopping'})">${ic('scan',18)} Fotografar etiqueta</button>
+  <button class="btn primary" onclick="go('checkout')">Estou no caixa</button>
+  <button class="btn ghost" onclick="go('conference')">Conferir com o cupom fiscal</button>`;
+}
+
+function camera(){
+  return `<div class="cam">
+    <div class="row" style="padding:16px"><button class="round" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2);color:#fff" aria-label="Fechar" onclick="go('shopping')">${ic('back',20,'#fff')}</button><p class="flex" style="text-align:center;font-weight:700">Enquadre a etiqueta</p><button class="round" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2)" aria-label="Lanterna">${ic('bolt',20,'#fff')}</button></div>
+    <div class="view"><div class="frame">${S.processing?'<div class="scan"></div>':''}<div class="tag"><div style="font-size:12px">${S.next.name.toUpperCase()}</div><div style="font-size:30px;font-weight:800">${brl(S.next.price)}</div>${S.next.promo?`<div style="font-size:11px;color:#c00">${S.next.promo}</div>`:''}</div></div>
+    <p style="position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:13px;opacity:.85">${S.processing?'Lendo etiqueta…':'Toque no botão para fotografar'}</p></div>
+    <div class="row" style="justify-content:space-around;padding:22px 16px calc(26px + env(safe-area-inset-bottom,0px))">
+      <button class="round" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2)" aria-label="Galeria">${ic('img',20,'#fff')}</button>
+      <button class="shoot" aria-label="Fotografar" onclick="shoot()"></button>
+      <div style="text-align:center"><p style="font-size:11px;opacity:.7">Total</p><p class="price">${brl(total())}</p></div>
+    </div></div>`;
+}
+function shoot(){if(S.processing)return;S.processing=true;render();setTimeout(()=>{S.processing=false;S.draft={...S.next,qty:1,conf:S.next.promo?0.74:0.96};go('confirm')},1400)}
+
+function confirm_(){
+  const d=S.draft;const low=d.conf<0.8;
+  return `${header('Produto identificado','camera')}
+  <div class="glass card"><div class="row"><div class="thumb" style="width:64px;height:64px;font-size:30px">${d.emoji}</div><div class="flex"><p style="font-weight:800;font-size:16px">${d.name}</p>${d.promo?`<span class="chip ok">${d.promo}</span>`:''}</div></div>
+  ${low?`<div class="chip warn" style="padding:8px 10px;border-radius:12px">${ic('warn',14)} Leitura com baixa confiança (${Math.round(d.conf*100)}%). Confira o preço.</div>`:`<span class="chip ok">${ic('check',14)} Confiança ${Math.round(d.conf*100)}%</span>`}</div>
+  <div class="field"><label for="f-name">Produto</label><input id="f-name" value="${d.name}" oninput="S.draft.name=this.value"></div>
+  <div class="row"><div class="field flex"><label for="f-price">Preço (R$)</label><input id="f-price" inputmode="decimal" value="${d.price.toFixed(2).replace('.',',')}" oninput="S.draft.price=parseFloat(this.value.replace(',','.'))||0" style="${low?'border-color:var(--warn)':''}"></div>
+  <div class="field" style="width:120px"><label for="f-qty">Quantidade</label><input id="f-qty" type="number" min="1" value="${d.qty}" oninput="S.draft.qty=Math.max(1,+this.value||1)"></div></div>
+  <button class="btn primary" onclick="addDraft()">Confirmar e fotografar o próximo</button>
+  <button class="btn ghost" onclick="addDraft(true)">Confirmar e ver a lista</button>`;
+}
+function addDraft(toList){
+  const d=S.draft;const ex=S.shopping.items.find(i=>i.name===d.name);
+  if(ex)ex.qty+=d.qty;else S.shopping.items.push({...d,status:null,charged:null,time:new Date().toTimeString().slice(0,5)});
+  S.next=CATALOG[(CATALOG.indexOf(CATALOG.find(c=>c.name===S.next.name))+1)%CATALOG.length];
+  toast(`Adicionado · total ${brl(total())}`);go(toList?'shopping':'camera');
+}
+
+function checkout(){
+  const it=S.shopping.items;const passed=it.filter(i=>i.status).length;
+  const diff=it.reduce((s,i)=>s+(i.status==='wrong'&&i.charged!=null?(i.charged-i.price)*i.qty:0),0);
+  return `${header('Modo Caixa','shopping')}
+  <div class="hero"><p class="label" style="color:rgba(255,255,255,.75)">Deve aparecer no caixa</p><p class="big" style="font-size:40px">${brl(total())}</p>
+  ${diff?`<span class="glassDark chip" style="align-self:flex-start;padding:6px 10px">Cobrado a mais: ${brl(diff)}</span>`:''}
+  <div><div class="bar" style="background:rgba(255,255,255,.25)"><i style="width:${it.length?passed/it.length*100:0}%;background:#fff"></i></div><p class="cap" style="margin-top:6px">${passed} de ${it.length} já passaram</p></div></div>
+  ${it.map((x,i)=>`<div class="glass item tap" tabindex="0" style="${x.status==='wrong'?'border-color:var(--danger)':''}" onclick="toggle(${i})">
+    <div class="check ${x.status==='passed'?'on':''} ${x.status==='wrong'?'wrong':''}">${x.status==='passed'?ic('check',18,'#fff'):x.status==='wrong'?ic('alert',18,'#fff'):''}</div>
+    <div class="flex"><p style="font-weight:700" class="${x.status==='passed'?'done':''}">${x.name}</p><p class="cap">${x.qty>1?x.qty+'x · ':''}${x.status==='wrong'&&x.charged!=null?'Caixa: '+brl(x.charged):(x.promo||'Toque quando passar')}</p></div>
+    <div style="text-align:right"><p class="price" style="${x.status==='wrong'?'color:var(--danger)':''}">${brl(x.price*x.qty)}</p><button class="link" onclick="event.stopPropagation();S.proof=${i};render()">${x.status==='wrong'?'Ver prova':'Preço errado?'}</button></div></div>`).join('')}
+  <button class="btn primary" onclick="finish()">Concluir</button>
+  ${S.proof!=null?proof():''}`;
+}
+function toggle(i){const x=S.shopping.items[i];x.status=x.status==='passed'?null:x.status==='wrong'?'wrong':'passed';render()}
+function proof(){
+  const x=S.shopping.items[S.proof];
+  return `<div class="modal"><div class="scroll noTab">${`<div class="header"><button class="round" aria-label="Voltar" onclick="S.proof=null;render()">${ic('back')}</button><h2 class="heading flex">Mostre ao atendente</h2></div>`}
+  <div class="hero"><p class="label" style="color:rgba(255,255,255,.75)">Preço na etiqueta</p><p class="big" style="font-size:52px">${brl(x.price)}</p><p class="heading">${x.name}</p>${x.promo?`<span class="glassDark chip" style="align-self:flex-start">${x.promo}</span>`:''}<p class="cap">Fotografado hoje às ${x.time} · ${S.shopping.market}</p></div>
+  <div class="glass" style="aspect-ratio:4/3;display:grid;place-items:center;background:#2b352e"><div class="tag" style="width:70%"><div style="font-size:12px">${x.name.toUpperCase()}</div><div style="font-size:30px;font-weight:800">${brl(x.price)}</div></div></div>
+  <div class="field"><label for="f-charged">Quanto apareceu no caixa? (opcional)</label><input id="f-charged" inputmode="decimal" placeholder="0,00" value="${x.charged!=null?x.charged.toFixed(2).replace('.',','):''}" oninput="S.tmp=parseFloat(this.value.replace(',','.'));document.getElementById('dif').textContent=isNaN(S.tmp)?'':'Diferença por unidade: '+brl(S.tmp-${x.price})"></div>
+  <p id="dif" style="font-weight:700;color:var(--danger)"></p>
+  <button class="btn danger" onclick="const x=S.shopping.items[S.proof];x.status='wrong';x.charged=isNaN(S.tmp)?x.charged:S.tmp;S.proof=null;S.tmp=NaN;toast('Divergência registrada')">Registrar valor cobrado</button>
+  <button class="btn ghost" onclick="const x=S.shopping.items[S.proof];x.status='passed';x.charged=null;S.proof=null;toast('Marcado como corrigido')">O caixa corrigiu</button></div></div>`;
+}
+function finish(){
+  const div=S.shopping.items.filter(i=>i.status==='wrong').length;
+  const paid=S.shopping.items.reduce((s,i)=>s+(i.status==='wrong'&&i.charged!=null?i.charged:i.price)*i.qty,0);
+  S.history.unshift({market:S.shopping.market.split(' ·')[0],date:'hoje',total:total(),paid,div});
+  toast('Compra concluída');S.tab='home';go('conference');
+}
+
+function conference(){
+  const lines=[
+    {n:'Arroz Tio João 5kg',e:29.90,c:29.90},
+    {n:'Café Pilão 500g',e:24.98,c:27.90,why:'Promoção não aplicada'},
+    {n:'Leite Italac Integral 1L',e:34.74,c:34.74,q:'6x'},
+    {n:'Coca-Cola 2L',e:22.98,c:34.47,q:'3x',why:'Leve 3 pague 2 não aplicado'},
+  ];
+  const E=lines.reduce((s,l)=>s+l.e,0),C=lines.reduce((s,l)=>s+l.c,0);
+  return `${header('Conferência')}
+  <div class="glass card"><div class="stats">
+    <div><p class="cap">Esperado</p><p class="price">${brl(E)}</p></div><div><p class="cap">Cobrado</p><p class="price">${brl(C)}</p></div><div><p class="cap">Diferença</p><p class="price" style="color:var(--danger)">+${brl(C-E)}</p></div></div>
+    <span class="chip bad" style="align-self:flex-start">2 divergências encontradas</span></div>
+  ${lines.map(l=>`<div class="glass card" style="${l.why?'border-color:var(--danger)':''}"><div class="row"><p class="flex" style="font-weight:700">${l.n}</p>${l.why?'<span class="chip bad">Divergente</span>':'<span class="chip ok">OK</span>'}</div>
+  <div class="stats" style="font-size:13px"><div><p class="cap">Etiqueta</p><p class="price">${brl(l.e)}</p></div><div><p class="cap">Cupom ${l.q||''}</p><p class="price">${brl(l.c)}</p></div><div><p class="cap">Dif.</p><p class="price" style="color:${l.c>l.e?'var(--danger)':'var(--text3)'}">${l.c>l.e?'+'+brl(l.c-l.e):'—'}</p></div></div>
+  ${l.why?`<p class="cap" style="color:var(--danger)">${l.why}</p><button class="btn danger" style="padding:10px" onclick="toast('Divergência confirmada')">Confirmar divergência</button>`:''}</div>`).join('')}
+  <h3 class="heading">No cupom, mas não fotografados</h3>
+  <div class="glass item"><div class="thumb">🧾</div><div class="flex"><p style="font-weight:700">SAB LIQ YPE 500ML</p><p class="cap">1x · sem etiqueta para comparar</p></div><p class="price">${brl(2.79)}</p></div>`;
+}
+
+function render(){
+  if(!S.next)S.next=CATALOG[1];
+  const body={tabs:{home,history,prices,profile}[S.tab],shopping,camera,confirm:confirm_,checkout,conference}[S.screen];
+  const isTab=S.screen==='tabs';
+  const html=S.screen==='camera'?camera():`<div class="scroll ${isTab?'':'noTab'}">${body()}</div>${isTab?tabbar():''}`;
+  const root=document.getElementById('root');const st=root.querySelector('.scroll')?.scrollTop;const same=root.dataset.s===S.screen+S.tab;
+  root.innerHTML=html+(S.toast?`<div class="toast" role="status">${S.toast}</div>`:'');
+  root.dataset.s=S.screen+S.tab;if(same&&st)root.querySelector('.scroll').scrollTop=st;
+}
+render();
+</script>
+</body></html>
