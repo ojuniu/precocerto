@@ -1,0 +1,25 @@
+# Configuração mínima para `supabase start` / `supabase functions serve`.
+project_id = "precocerto"
+
+[api]
+port = 54321
+schemas = ["public", "storage"]
+
+[db]
+port = 54322
+major_version = 15
+
+[auth]
+site_url = "precocerto://"
+enable_signup = true
+enable_anonymous_sign_ins = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+
+[storage]
+file_size_limit = "15MiB"
+
+[functions.ai-vision]
+verify_jwt = true

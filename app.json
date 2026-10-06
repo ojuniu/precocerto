@@ -1,25 +1,65 @@
 {
   "expo": {
-    "name": "precocerto",
+    "name": "PreçoCerto",
     "slug": "precocerto",
+    "scheme": "precocerto",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#F4F5F7",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.precocerto.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "O PreçoCerto usa a câmera para fotografar etiquetas de preço e cupons fiscais.",
+        "NSPhotoLibraryUsageDescription": "O PreçoCerto acessa suas fotos para ler cupons fiscais salvos na galeria."
+      }
     },
     "android": {
+      "package": "com.precocerto.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0E9F6E",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
+      "permissions": ["android.permission.CAMERA"],
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#0E9F6E"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O PreçoCerto usa a câmera para fotografar etiquetas de preço e cupons fiscais.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O PreçoCerto acessa suas fotos para ler cupons fiscais salvos na galeria."
+        }
+      ],
+      "expo-secure-store",
+      "expo-font",
+      "expo-image"
+    ],
+    "experiments": {
+      "typedRoutes": false
     }
   }
 }
