@@ -2,13 +2,16 @@
 
 **Confira. Compare. Não pague a mais.**
 
-App mobile (iOS e Android) que funciona como um fiscal de preços pessoal: você fotografa as etiquetas na prateleira, o app reconhece produto e preço, monta a lista com o total esperado e, no fim, lê o cupom fiscal e aponta cada item cobrado diferente da etiqueta.
+App mobile (iOS e Android) que funciona como um fiscal de preços pessoal: você fotografa as etiquetas na prateleira, o app reconhece produto e preço e vai somando. No caixa, o **Modo Caixa** mostra o total que deve aparecer na tela e, se algo passar errado, abre a prova ("na placa estava X") para mostrar ao atendente. Depois, se quiser, o app lê o cupom fiscal e aponta cada item cobrado diferente da etiqueta.
 
 ```
-📸 foto da etiqueta → 🤖 reconhecimento → ✅ confirmar → 🛒 próximo produto
+📸 foto da etiqueta → 🤖 reconhecimento → ✅ confirmar → 🛒 total somado
                                     ...
-🧾 foto do cupom → 🔗 matching → ⚖️ comparação → ⚠️ divergências
+🏪 Modo Caixa: total esperado → ✔️ marca o que passou → 🚩 "Preço errado?" → prova da etiqueta
+🧾 (opcional) foto do cupom → 🔗 matching → ⚖️ comparação → ⚠️ divergências
 ```
+
+Visual: degradê verde, vidro fosco (glassmorphism), tipografia Plus Jakarta Sans, barra de abas de vidro com o botão de câmera no centro.
 
 ---
 
@@ -58,7 +61,14 @@ Princípios aplicados:
 - **Matching nunca assume em silêncio.** Abaixo de 82% de confiança a correspondência vai para o usuário ("É o mesmo produto?").
 - **Regras de negócio puras e testadas.** `pricing`, `productMatching`, `receipt`, `comparison`, `subscription` não dependem de React Native.
 
-### Fluxo do cupom (o coração do app)
+### Modo Caixa (conferência na hora de pagar)
+
+1. Na compra, "Estou no caixa" abre `CheckoutScreen` com o total das etiquetas em destaque.
+2. A cada produto que passa, o cliente toca na linha (`checkout_status = passed`). A barra mostra o progresso.
+3. Se a tela do caixa mostrar outro valor, "Preço errado?" abre a **prova**: preço da etiqueta em letras grandes, foto da etiqueta, data/hora e mercado, para mostrar ao atendente. Dá para registrar o valor cobrado (`checkout_status = wrong`, `checkout_charged_price`) ou marcar "O caixa corrigiu".
+4. `summarizeCheckout` (em `services/comparison/checkout.ts`) recalcula o total esperado com as diferenças; "Concluir" grava o resumo em `shoppings`. As divergências registradas aparecem também na tela de conferência.
+
+### Fluxo do cupom (conferência depois da compra)
 
 1. `scanReceipt` reduz a foto e envia à IA (`task: receipt`).
 2. `normalizeReceipt` completa preços unitários, agrupa linhas repetidas (mesmo produto passado duas vezes), aplica descontos por item e confere se a soma bate com o total.
@@ -203,6 +213,7 @@ npm run lint         # ESLint (config Expo)
 - Tela "Produto identificado" com miniatura, confirmar/editar e alerta de baixa confiança com confirmação manual.
 - Confirmar volta direto para a câmera (próximo produto) com total da compra visível.
 - Lista da compra com total estimado, edição e remoção de itens.
+- Modo Caixa: total que deve aparecer no caixa, checklist do que passou, "Preço errado?" com a prova da etiqueta para o atendente e registro do valor cobrado.
 - Leitura em lote de prateleira (várias etiquetas, bbox, seleção) – Premium.
 - Leitura de cupom pela câmera ou galeria: itens, quantidades, unitário, total, descontos, subtotal e total.
 - Matching etiqueta ↔ cupom com confirmação do usuário para casos duvidosos e vínculo manual.
@@ -213,7 +224,7 @@ npm run lint         # ESLint (config Expo)
 - Freemium: limite mensal aplicado no banco, telas bloqueadas com convite ao Premium, paywall.
 - Fotos salvas em storage privado por usuário.
 
-Validação feita durante o desenvolvimento: TypeScript estrito sem erros, ESLint limpo, 41 testes unitários, bundles Android e iOS gerados com `expo export`, migração SQL e políticas RLS testadas em Postgres (21 checagens), Edge Function verificada com `deno check` e executada localmente (autenticação, validação, bloqueio Premium e erro de configuração), e o fluxo de telas percorrido em navegador headless.
+Validação feita durante o desenvolvimento: TypeScript estrito sem erros, ESLint limpo, 42 testes unitários, bundles Android e iOS gerados com `expo export`, migração SQL e políticas RLS testadas em Postgres (24 checagens, incluindo o Modo Caixa), Edge Function verificada com `deno check` e executada localmente (autenticação, validação, bloqueio Premium e erro de configuração), e o fluxo de telas percorrido em navegador headless.
 
 ## 8. O que depende de configuração externa
 
@@ -227,7 +238,13 @@ Validação feita durante o desenvolvimento: TypeScript estrito sem erros, ESLin
 | Ícone e splash definitivos | substituir os arquivos em `assets/` |
 | Publicação nas lojas | `npx eas-cli build` / `submit` |
 
-## 9. Preparado para o futuro
+## 9. Próximas fases (propostas)
+
+- **Fase 2 – Preços colaborativos e mapa:** cada etiqueta confirmada vira um preço público anônimo por mercado; mapa de mercados próximos, busca por produto, ranking dos mais baratos, mercados favoritos.
+- **Fase 3 – Lista de compras inteligente:** aba de lista, lista gerada por IA para economizar, dieta com IA mostrando onde os ingredientes estão mais baratos.
+- **Fase 4 – Comunidade:** perfis, dicas e vídeos em feed, reputação para quem mantém os preços atualizados.
+
+## 10. Preparado para o futuro
 
 - **Comparação automática de mercados / mapa:** `markets` já tem `latitude`/`longitude`; `market_price_comparison()` pronto.
 - **Alertas de preço:** `price_history` + feature `price_alerts` no plano.

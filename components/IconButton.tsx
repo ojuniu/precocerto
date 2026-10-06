@@ -20,7 +20,7 @@ export function IconButton({ icon, onPress, label, tone = 'light', size = 44 }: 
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
-        { width: size, height: size, backgroundColor: dark ? 'rgba(0,0,0,0.45)' : colors.surface, opacity: pressed ? 0.7 : 1 },
+        { width: size, height: size, backgroundColor: dark ? 'rgba(255,255,255,0.18)' : colors.glass, borderWidth: 1, borderColor: dark ? 'rgba(255,255,255,0.25)' : colors.glassBorder, opacity: pressed ? 0.7 : 1 },
       ]}
     >
       <Ionicons name={icon} size={size * 0.48} color={dark ? colors.white : colors.text} />

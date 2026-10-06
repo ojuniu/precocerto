@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { colors, spacing } from '@/constants/theme';
+import { GradientBackground } from './GradientBackground';
 
 export interface ScreenProps {
   children: ReactNode;
@@ -16,6 +17,7 @@ export interface ScreenProps {
 export function Screen({ children, scroll = true, edges = ['top'], footer, refreshing, onRefresh, contentStyle }: ScreenProps) {
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
+      <GradientBackground />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {scroll ? (
           <ScrollView
@@ -43,8 +45,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.md,
-    backgroundColor: colors.background,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
+    paddingBottom: spacing.sm,
+    backgroundColor: 'rgba(241,244,238,0.94)',
   },
 });

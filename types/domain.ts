@@ -66,7 +66,13 @@ export interface ShoppingItem {
   imagePath: string | null;
   confidence: number | null;
   createdAt: string;
+  /** Modo Caixa: passou no caixa, ou o cliente viu preço diferente. */
+  checkoutStatus: CheckoutStatus;
+  /** Preço unitário que apareceu no caixa, quando diferente da etiqueta. */
+  checkoutChargedPrice: number | null;
 }
+
+export type CheckoutStatus = 'pending' | 'passed' | 'wrong';
 
 export interface ReceiptItem {
   id: string;

@@ -9,6 +9,7 @@ import type {
   Shopping,
   ShoppingItem,
   ShoppingStatus,
+  CheckoutStatus,
   SizeUnit,
   MatchStatus,
 } from '@/types/domain';
@@ -60,6 +61,8 @@ export interface ShoppingItemRow {
   image_path: string | null;
   confidence: Numeric;
   created_at: string;
+  checkout_status?: CheckoutStatus;
+  checkout_charged_price?: Numeric;
 }
 
 export interface ReceiptRow {
@@ -145,6 +148,8 @@ export const mapShoppingItem = (row: ShoppingItemRow): ShoppingItem => ({
   imagePath: row.image_path,
   confidence: toNumber(row.confidence),
   createdAt: row.created_at,
+  checkoutStatus: row.checkout_status ?? 'pending',
+  checkoutChargedPrice: toNumber(row.checkout_charged_price ?? null),
 });
 
 export const mapReceiptItem = (row: ReceiptItemRow): ReceiptItem => ({

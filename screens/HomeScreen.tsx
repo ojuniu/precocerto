@@ -5,14 +5,30 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorBanner } from '@/components/ErrorBanner';
+import { GlassView } from '@/components/GlassView';
+import { GradientCard } from '@/components/GradientCard';
+import { Logo } from '@/components/Logo';
+import { PillAction } from '@/components/PillAction';
 import { PlanUsage } from '@/components/PlanUsage';
 import { Screen } from '@/components/Screen';
 import { ShoppingCard } from '@/components/ShoppingCard';
-import { colors, radius, shadow, spacing } from '@/constants/theme';
+import { colors, radius, spacing } from '@/constants/theme';
 import { useHistoryStore } from '@/store/historyStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { formatBRL } from '@/utils/money';
 import { openShopping } from '@/utils/navigation';
+
+function MiniStat({ icon, label, value, tone }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string; tone?: string }) {
+  return (
+    <GlassView style={styles.stat}>
+      <View style={styles.statIcon}>
+        <Ionicons name={icon} size={16} color={colors.primaryDark} />
+      </View>
+      <AppText variant="price" color={tone}>{value}</AppText>
+      <AppText variant="caption">{label}</AppText>
+    </GlassView>
+  );
+}
 
 export default function HomeScreen() {
   const { shoppings, loading, error, loaded, refresh } = useHistoryStore();
@@ -28,43 +44,81 @@ export default function HomeScreen() {
 
   const ongoing = shoppings.find((s) => s.status !== 'checked');
   const recent = shoppings.filter((s) => s.id !== ongoing?.id).slice(0, 5);
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+  const thisMonth = shoppings.filter((s) => s.createdAt >= monthStart);
+  const spent = thisMonth.reduce((sum, s) => sum + (s.paidTotal ?? s.expectedTotal), 0);
+  const divergences = thisMonth.reduce((sum, s) => sum + s.divergenceCount, 0);
 
   return (
     <Screen refreshing={loading && loaded} onRefresh={() => refresh(historyDays)}>
-      <View style={styles.greeting}>
-        <AppText variant="title">Olá 👋</AppText>
-        <AppText variant="body" color={colors.textSecondary}>Pronto para sua próxima compra?</AppText>
+      <View style={styles.topRow}>
+        <Logo size={44} />
+        <View style={styles.flex}>
+          <AppText variant="title">Olá 👋</AppText>
+          <AppText variant="caption">Pronto para sua próxima compra?</AppText>
+        </View>
+        <Pressable onPress={() => router.push('/profile')} style={styles.roundButton} accessibilityLabel="Conta">
+          <Ionicons name="person" size={20} color={colors.text} />
+        </Pressable>
       </View>
 
-      <Pressable onPress={() => router.push('/shopping/new')} style={({ pressed }) => [styles.cta, pressed && styles.pressed]}>
-        <View style={styles.ctaIcon}>
-          <Ionicons name="add" size={30} color={colors.primary} />
-        </View>
-        <View style={styles.flex}>
-          <AppText variant="title" color={colors.white}>Nova compra</AppText>
-          <AppText variant="body" color="rgba(255,255,255,0.85)">Fotografe etiquetas e confira o cupom</AppText>
-        </View>
-      </Pressable>
-
-      {ongoing ? (
-        <Pressable onPress={() => openShopping(ongoing)} style={({ pressed }) => [styles.ongoing, pressed && styles.pressed]}>
-          <Ionicons name="cart" size={22} color={colors.primaryDark} />
+      <GradientCard>
+        <View style={styles.heroHeader}>
           <View style={styles.flex}>
-            <AppText variant="bodyStrong">Continuar compra em {ongoing.marketName}</AppText>
-            <AppText variant="caption">
-              {ongoing.itemCount} produtos · {formatBRL(ongoing.expectedTotal)}
-            </AppText>
+            <AppText variant="title" color={colors.white}>{ongoing ? 'Compra em andamento' : 'Nova compra'}</AppText>
+            <View style={styles.heroMeta}>
+              <Ionicons name={ongoing ? 'storefront-outline' : 'sparkles-outline'} size={14} color="rgba(255,255,255,0.85)" />
+              <AppText variant="caption" color="rgba(255,255,255,0.85)">
+                {ongoing ? ongoing.marketName : 'Fotografe, some e confira no caixa'}
+              </AppText>
+            </View>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-        </Pressable>
-      ) : null}
+          {ongoing ? (
+            <GlassView tone="dark" style={styles.countChip}>
+              <AppText variant="caption" color={colors.white}>{ongoing.itemCount} itens</AppText>
+            </GlassView>
+          ) : null}
+        </View>
+        {ongoing ? (
+          <View>
+            <AppText variant="label" color="rgba(255,255,255,0.7)">Total até agora</AppText>
+            <AppText variant="priceLarge" color={colors.white}>{formatBRL(ongoing.expectedTotal)}</AppText>
+          </View>
+        ) : (
+          <View style={styles.steps}>
+            {(['camera', 'calculator', 'checkmark-done'] as const).map((icon, i) => (
+              <GlassView key={icon} tone="dark" style={styles.step}>
+                <Ionicons name={icon} size={18} color={colors.white} />
+                <AppText variant="caption" color={colors.white}>{['Foto', 'Soma', 'Confere'][i]}</AppText>
+              </GlassView>
+            ))}
+          </View>
+        )}
+        <PillAction
+          title={ongoing ? 'Continuar compra' : 'Começar compra'}
+          onPress={() => (ongoing ? openShopping(ongoing) : router.push('/shopping/new'))}
+        />
+      </GradientCard>
+
+      <View style={styles.stats}>
+        <MiniStat icon="bag-handle-outline" label="Compras no mês" value={String(thisMonth.length)} />
+        <MiniStat icon="wallet-outline" label="Gasto no mês" value={formatBRL(spent)} />
+        <MiniStat icon="alert-circle-outline" label="Divergências" value={String(divergences)} tone={divergences > 0 ? colors.danger : undefined} />
+      </View>
 
       <PlanUsage compact />
 
-      <AppText variant="heading">Últimas compras</AppText>
+      <View style={styles.sectionHeader}>
+        <AppText variant="heading">Últimas compras</AppText>
+        {recent.length > 0 ? (
+          <Pressable onPress={() => router.push('/history')}>
+            <AppText variant="bodyStrong" color={colors.primaryDark}>Ver todas</AppText>
+          </Pressable>
+        ) : null}
+      </View>
       {error ? <ErrorBanner message={error} onRetry={() => refresh(historyDays)} /> : null}
-      {loaded && !error && recent.length === 0 && !ongoing ? (
-        <EmptyState icon="basket-outline" title="Nenhuma compra ainda" message="Suas compras conferidas aparecem aqui." />
+      {loaded && !error && recent.length === 0 ? (
+        <EmptyState icon="basket-outline" title="Nenhuma compra conferida ainda" message="Suas compras aparecem aqui com o total e as divergências." />
       ) : null}
       {recent.map((shopping) => (
         <ShoppingCard key={shopping.id} shopping={shopping} onPress={() => openShopping(shopping)} />
@@ -74,33 +128,33 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  greeting: { gap: spacing.xs, marginTop: spacing.md },
-  flex: { flex: 1, gap: 2 },
-  cta: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.xl,
-    padding: spacing.xl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-    ...shadow,
-    shadowOpacity: 0.18,
-  },
-  ctaIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: radius.lg,
-    backgroundColor: colors.white,
+  flex: { flex: 1 },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.sm },
+  roundButton: {
+    width: 46,
+    height: 46,
+    borderRadius: radius.pill,
+    backgroundColor: colors.glass,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ongoing: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+  heroHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  heroMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  countChip: { borderRadius: radius.pill, paddingHorizontal: spacing.md, paddingVertical: 6 },
+  steps: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.sm },
+  step: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: spacing.md, borderRadius: radius.md },
+  stats: { flexDirection: 'row', gap: spacing.sm },
+  stat: { flex: 1, padding: spacing.md, gap: 2, borderRadius: radius.md },
+  statIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: colors.primarySoft,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
-  pressed: { opacity: 0.9, transform: [{ scale: 0.99 }] },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 });

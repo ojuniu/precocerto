@@ -1,9 +1,9 @@
-import type { PriceUnit, PromoRule, ShoppingItem, SizeUnit } from '@/types/domain';
+import type { CheckoutStatus, PriceUnit, PromoRule, ShoppingItem, SizeUnit } from '@/types/domain';
 import { databaseError, getSupabase } from './supabaseClient';
 import { mapShoppingItem, type ShoppingItemRow } from './mappers';
 
 const COLUMNS =
-  'id, shopping_id, product_id, name, brand, description, size_value, size_unit, price_unit, shelf_price, promo_price, promo_type, promo_buy_quantity, promo_pay_quantity, promo_nth_unit, promo_discount_percent, quantity, image_path, confidence, created_at';
+  'id, shopping_id, product_id, name, brand, description, size_value, size_unit, price_unit, shelf_price, promo_price, promo_type, promo_buy_quantity, promo_pay_quantity, promo_nth_unit, promo_discount_percent, quantity, image_path, confidence, created_at, checkout_status, checkout_charged_price';
 
 export interface ShoppingItemInput {
   name: string;
@@ -68,6 +68,14 @@ export async function updateItem(id: string, input: Partial<ShoppingItemInput>):
   const { data, error } = await getSupabase().from('shopping_items').update(toRow(input)).eq('id', id).select(COLUMNS).single();
   if (error) throw databaseError(error, 'Não foi possível atualizar o produto.');
   return mapShoppingItem(data as ShoppingItemRow);
+}
+
+export async function updateCheckout(id: string, status: CheckoutStatus, chargedPrice: number | null): Promise<void> {
+  const { error } = await getSupabase()
+    .from('shopping_items')
+    .update({ checkout_status: status, checkout_charged_price: chargedPrice })
+    .eq('id', id);
+  if (error) throw databaseError(error, 'Não foi possível salvar a conferência do item.');
 }
 
 export async function deleteItem(id: string): Promise<void> {

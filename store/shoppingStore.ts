@@ -1,10 +1,11 @@
 import { create } from 'zustand';
-import { getShopping } from '@/services/data/shoppingRepository';
 import { addItem, addItems, editItem, refreshTotals, removeItem, type AddItemResult } from '@/services/shopping/shoppingService';
-import { listItems } from '@/services/data/itemRepository';
+import { listItems, updateCheckout } from '@/services/data/itemRepository';
+import { getShopping as fetchShopping, updateShopping } from '@/services/data/shoppingRepository';
+import { summarizeCheckout } from '@/services/comparison/checkout';
 import type { ItemDraft } from '@/services/shopping/itemDraft';
 import type { ImagePayload } from '@/types/ai';
-import type { Shopping, ShoppingItem } from '@/types/domain';
+import type { CheckoutStatus, Shopping, ShoppingItem } from '@/types/domain';
 import { toUserMessage } from '@/utils/errors';
 
 interface ShoppingState {
@@ -18,6 +19,8 @@ interface ShoppingState {
   addBatch: (drafts: ItemDraft[], image?: ImagePayload) => Promise<number>;
   update: (itemId: string, draft: ItemDraft) => Promise<void>;
   remove: (itemId: string) => Promise<void>;
+  setCheckout: (itemId: string, status: CheckoutStatus, chargedPrice?: number | null) => Promise<void>;
+  finishCheckout: () => Promise<Shopping>;
 }
 
 function requireShopping(shopping: Shopping | null): Shopping {
@@ -35,7 +38,7 @@ export const useShoppingStore = create<ShoppingState>((set, get) => ({
     if (get().shopping?.id !== shoppingId) set({ shopping: null, items: [] });
     set({ loading: true, error: null });
     try {
-      const [shopping, items] = await Promise.all([getShopping(shoppingId), listItems(shoppingId)]);
+      const [shopping, items] = await Promise.all([fetchShopping(shoppingId), listItems(shoppingId)]);
       set({ shopping, items, loading: false });
     } catch (error) {
       set({ loading: false, error: toUserMessage(error) });
@@ -70,6 +73,33 @@ export const useShoppingStore = create<ShoppingState>((set, get) => ({
     const items = get().items.map((i) => (i.id === itemId ? updated : i));
     const refreshed = await refreshTotals(shopping.id, items);
     set({ shopping: refreshed.shopping, items });
+  },
+
+  setCheckout: async (itemId, status, chargedPrice = null) => {
+    const previous = get().items;
+    const apply = (items: ShoppingItem[]) =>
+      items.map((i) => (i.id === itemId ? { ...i, checkoutStatus: status, checkoutChargedPrice: status === 'wrong' ? chargedPrice : null } : i));
+    set({ items: apply(previous) });
+    try {
+      await updateCheckout(itemId, status, status === 'wrong' ? chargedPrice : null);
+    } catch (error) {
+      set({ items: previous });
+      throw error;
+    }
+  },
+
+  finishCheckout: async () => {
+    const shopping = requireShopping(get().shopping);
+    const summary = summarizeCheckout(get().items);
+    const updated = await updateShopping(shopping.id, {
+      status: 'checked',
+      expectedTotal: summary.expectedTotal,
+      paidTotal: summary.chargedTotal,
+      difference: summary.difference,
+      divergenceCount: summary.wrongCount,
+    });
+    set({ shopping: updated });
+    return updated;
   },
 
   remove: async (itemId) => {

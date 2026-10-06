@@ -4,7 +4,9 @@ import { router } from 'expo-router';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { ErrorBanner } from '@/components/ErrorBanner';
+import { GradientCard } from '@/components/GradientCard';
 import { Logo } from '@/components/Logo';
+import { PillAction } from '@/components/PillAction';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { colors, spacing } from '@/constants/theme';
@@ -45,13 +47,18 @@ export default function SignInScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <Logo size={72} />
-        <AppText variant="display">PreçoCerto</AppText>
-        <AppText variant="body" color={colors.textSecondary}>Seu fiscal de preços pessoal no supermercado.</AppText>
-      </View>
-
-      <Button title="Começar agora" size="lg" icon="flash" loading={busy === 'guest'} disabled={busy !== null} onPress={() => run('guest', continueAsGuest)} />
+      <GradientCard style={styles.hero}>
+        <Logo size={64} inverted />
+        <AppText variant="display" color={colors.white}>PreçoCerto</AppText>
+        <AppText variant="body" color="rgba(255,255,255,0.88)">
+          Fotografe as etiquetas, saiba o total antes do caixa e não pague a mais.
+        </AppText>
+        {busy === 'guest' ? (
+          <Button title="Entrando..." variant="secondary" loading onPress={() => undefined} />
+        ) : (
+          <PillAction title="Começar agora" icon="flash" onPress={() => busy === null && run('guest', continueAsGuest)} />
+        )}
+      </GradientCard>
       <AppText variant="caption" align="center">Sem cadastro. Você pode criar uma conta depois para não perder seu histórico.</AppText>
 
       <View style={styles.divider}>
@@ -74,7 +81,7 @@ export default function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: spacing.sm, marginTop: spacing.xxl, marginBottom: spacing.lg },
+  hero: { marginTop: spacing.xl, paddingVertical: spacing.xxl },
   divider: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginVertical: spacing.sm },
   line: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
 });

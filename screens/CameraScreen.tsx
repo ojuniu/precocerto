@@ -8,6 +8,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
+import { GlassView } from '@/components/GlassView';
 import { IconButton } from '@/components/IconButton';
 import { ProcessingOverlay } from '@/components/ProcessingOverlay';
 import { colors, radius, spacing } from '@/constants/theme';
@@ -127,40 +128,46 @@ export default function CameraScreen() {
     );
   }
 
+  const modes: { key: CameraMode; label: string; icon: keyof typeof Ionicons.glyphMap; locked?: boolean }[] = [
+    { key: 'tag', label: 'Etiqueta', icon: 'pricetag-outline' },
+    { key: 'shelf', label: 'Prateleira', icon: 'grid-outline', locked: !canBatch },
+    ...(mode === 'receipt' || (shopping?.itemCount ?? 0) > 0 ? [{ key: 'receipt' as const, label: 'Cupom', icon: 'receipt-outline' as const }] : []),
+  ];
+
   return (
     <View style={styles.black}>
       <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" enableTorch={torch} active={focused && !processing} />
 
       <SafeAreaView style={styles.overlay} edges={['top', 'bottom']}>
         <View style={styles.topBar}>
-          <IconButton icon="close" label="Fechar câmera" tone="dark" onPress={() => router.back()} />
-          {mode !== 'receipt' ? (
-            <View style={styles.modeSwitch}>
-              {(['tag', 'shelf'] as const).map((m) => (
-                <Pressable key={m} onPress={() => selectMode(m)} style={[styles.modeOption, mode === m && styles.modeSelected]}>
-                  <AppText variant="caption" color={mode === m ? colors.ink : colors.white}>
-                    {m === 'tag' ? 'Etiqueta' : 'Prateleira'}
-                    {m === 'shelf' && !canBatch ? ' ★' : ''}
-                  </AppText>
-                </Pressable>
-              ))}
-            </View>
+          <IconButton icon="chevron-back" label="Fechar câmera" tone="dark" onPress={() => router.back()} />
+          {mode !== 'receipt' && shopping && shopping.itemCount > 0 ? (
+            <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Ver lista">
+              <GlassView tone="dark" style={styles.summaryPill}>
+                <Ionicons name="cart" size={16} color={colors.lime} />
+                <AppText variant="bodyStrong" color={colors.white}>
+                  {shopping.itemCount} · {formatBRL(shopping.expectedTotal)}
+                </AppText>
+              </GlassView>
+            </Pressable>
           ) : (
-            <AppText variant="heading" color={colors.white}>Cupom fiscal</AppText>
+            <GlassView tone="dark" style={styles.summaryPill}>
+              <AppText variant="bodyStrong" color={colors.white}>{mode === 'receipt' ? 'Cupom fiscal' : 'Nova etiqueta'}</AppText>
+            </GlassView>
           )}
           <IconButton icon={torch ? 'flash' : 'flash-off'} label="Lanterna" tone="dark" onPress={() => setTorch((t) => !t)} />
         </View>
 
         <View style={styles.guideArea}>
-          <AppText variant="heading" color={colors.white} align="center" style={styles.guideText}>
-            {guidance.title}
-          </AppText>
           <View style={[styles.frame, { width: guidance.frame.width as `${number}%`, aspectRatio: guidance.frame.aspect }]}>
             <View style={[styles.corner, styles.cornerTL]} />
             <View style={[styles.corner, styles.cornerTR]} />
             <View style={[styles.corner, styles.cornerBL]} />
             <View style={[styles.corner, styles.cornerBR]} />
           </View>
+          <GlassView tone="dark" style={styles.guidePill}>
+            <AppText variant="bodyStrong" color={colors.white} align="center">{guidance.title}</AppText>
+          </GlassView>
         </View>
 
         {error ? (
@@ -185,26 +192,45 @@ export default function CameraScreen() {
           </View>
         ) : null}
 
-        <View style={styles.bottom}>
-          {mode !== 'receipt' && shopping && shopping.itemCount > 0 ? (
-            <Pressable onPress={() => router.back()} style={styles.summaryPill}>
-              <Ionicons name="cart" size={16} color={colors.white} />
-              <AppText variant="bodyStrong" color={colors.white}>
-                {shopping.itemCount} {shopping.itemCount === 1 ? 'produto' : 'produtos'} · {formatBRL(shopping.expectedTotal)}
-              </AppText>
-              <AppText variant="caption" color={colors.primary}>Ver lista</AppText>
-            </Pressable>
-          ) : null}
-          <View style={styles.controls}>
-            <IconButton icon="images" label="Escolher da galeria" tone="dark" size={52} onPress={pickFromGallery} />
-            <Pressable accessibilityRole="button" accessibilityLabel="Fotografar" onPress={capture} style={styles.shutter}>
-              <View style={styles.shutterInner}>
-                <Ionicons name="camera" size={28} color={colors.ink} />
-              </View>
-            </Pressable>
-            <View style={styles.placeholder} />
+        <GlassView tone="dark" intensity={50} style={styles.panel}>
+          <View style={styles.tiles}>
+            {modes.map((m) => {
+              const selected = mode === m.key;
+              return (
+                <Pressable
+                  key={m.key}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => selectMode(m.key)}
+                  style={[styles.tile, selected && styles.tileSelected]}
+                >
+                  <Ionicons name={m.icon} size={20} color={selected ? colors.ink : colors.white} />
+                  <AppText variant="caption" color={selected ? colors.ink : colors.white}>
+                    {m.label}
+                    {m.locked ? ' ★' : ''}
+                  </AppText>
+                </Pressable>
+              );
+            })}
           </View>
-        </View>
+          <View style={styles.controls}>
+            <IconButton icon="images-outline" label="Escolher da galeria" tone="dark" size={52} onPress={pickFromGallery} />
+            <Pressable accessibilityRole="button" accessibilityLabel="Fotografar" onPress={capture} style={({ pressed }) => [styles.shutter, pressed && styles.shutterPressed]}>
+              <View style={styles.shutterInner} />
+            </Pressable>
+            {mode === 'tag' ? (
+              <IconButton
+                icon="create-outline"
+                label="Digitar preço"
+                tone="dark"
+                size={52}
+                onPress={() => router.push(`/shopping/${shoppingId}/confirm?manual=1`)}
+              />
+            ) : (
+              <View style={styles.placeholder} />
+            )}
+          </View>
+        </GlassView>
       </SafeAreaView>
 
       {processing ? (
@@ -234,22 +260,20 @@ const styles = StyleSheet.create({
   },
   overlay: { flex: 1, justifyContent: 'space-between' },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
-  modeSwitch: { flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: radius.pill, padding: 4 },
-  modeOption: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radius.pill },
-  modeSelected: { backgroundColor: colors.white },
+  summaryPill: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderRadius: radius.pill, paddingHorizontal: spacing.lg, paddingVertical: 10 },
   guideArea: { alignItems: 'center', gap: spacing.lg, flexShrink: 1 },
-  guideText: { textShadowColor: 'rgba(0,0,0,0.6)', textShadowRadius: 6, paddingHorizontal: spacing.xl },
-  frame: { maxHeight: '75%' },
-  corner: { position: 'absolute', width: CORNER, height: CORNER, borderColor: colors.white },
-  cornerTL: { top: 0, left: 0, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: 14 },
-  cornerTR: { top: 0, right: 0, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: 14 },
-  cornerBL: { bottom: 0, left: 0, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: 14 },
-  cornerBR: { bottom: 0, right: 0, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: 14 },
+  guidePill: { borderRadius: radius.pill, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, marginHorizontal: spacing.xl },
+  frame: { maxHeight: '70%' },
+  corner: { position: 'absolute', width: CORNER, height: CORNER, borderColor: colors.lime },
+  cornerTL: { top: 0, left: 0, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: 18 },
+  cornerTR: { top: 0, right: 0, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: 18 },
+  cornerBL: { bottom: 0, left: 0, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: 18 },
+  cornerBR: { bottom: 0, right: 0, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: 18 },
   errorPanel: {
     position: 'absolute',
     left: spacing.lg,
     right: spacing.lg,
-    bottom: 170,
+    bottom: 230,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
@@ -257,26 +281,28 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   errorActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm },
-  bottom: { gap: spacing.lg, paddingBottom: spacing.lg, alignItems: 'center' },
-  summaryPill: {
-    flexDirection: 'row',
+  panel: { marginHorizontal: spacing.md, marginBottom: spacing.sm, borderRadius: radius.xl, padding: spacing.md, gap: spacing.lg },
+  tiles: { flexDirection: 'row', gap: spacing.sm },
+  tile: {
+    flex: 1,
     alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    gap: 4,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  controls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', alignSelf: 'stretch' },
+  tileSelected: { backgroundColor: colors.white },
+  controls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', alignSelf: 'stretch', paddingBottom: spacing.xs },
   shutter: {
-    width: 82,
-    height: 82,
-    borderRadius: 41,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     borderWidth: 4,
-    borderColor: colors.white,
+    borderColor: colors.lime,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  shutterInner: { width: 66, height: 66, borderRadius: 33, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
+  shutterPressed: { transform: [{ scale: 0.94 }] },
+  shutterInner: { width: 62, height: 62, borderRadius: 31, backgroundColor: colors.white },
   placeholder: { width: 52 },
 });

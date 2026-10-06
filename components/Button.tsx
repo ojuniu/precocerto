@@ -18,7 +18,7 @@ export interface ButtonProps {
 
 const PALETTE: Record<ButtonVariant, { bg: string; fg: string; border?: string }> = {
   primary: { bg: colors.primary, fg: colors.white },
-  secondary: { bg: colors.surface, fg: colors.text, border: colors.border },
+  secondary: { bg: colors.glass, fg: colors.text, border: colors.glassBorder },
   ghost: { bg: 'transparent', fg: colors.primaryDark },
   danger: { bg: colors.dangerSoft, fg: colors.danger },
   dark: { bg: colors.ink, fg: colors.white },
@@ -57,14 +57,14 @@ export function Button({ title, onPress, variant = 'primary', icon, loading, dis
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 50,
-    borderRadius: radius.md,
+    minHeight: 52,
+    borderRadius: radius.pill,
     paddingHorizontal: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
-  large: { minHeight: 60, borderRadius: radius.lg },
+  large: { minHeight: 62 },
   largeText: { fontSize: 17 },
   pressed: { transform: [{ scale: 0.98 }] },
   content: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

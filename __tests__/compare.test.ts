@@ -1,3 +1,4 @@
+import { summarizeCheckout } from '@/services/comparison/checkout';
 import { compareShopping } from '@/services/comparison/compare';
 import { match, receiptItem, shelfItem } from './fixtures';
 
@@ -53,5 +54,21 @@ describe('compareShopping', () => {
     expect(summary.notInReceiptCount).toBe(1);
     expect(summary.notPhotographedCount).toBe(1);
     expect(summary.notPhotographedTotal).toBe(4.5);
+  });
+});
+
+
+describe('summarizeCheckout', () => {
+  it('soma o que passou e o impacto dos preços errados', () => {
+    const coca = shelfItem({ shelfPrice: 9.99, checkoutStatus: 'wrong', checkoutChargedPrice: 11.49 });
+    const leite = shelfItem({ shelfPrice: 5.79, quantity: 2, checkoutStatus: 'passed' });
+    const arroz = shelfItem({ shelfPrice: 24.9 });
+    const summary = summarizeCheckout([coca, leite, arroz]);
+    expect(summary.expectedTotal).toBe(46.47);
+    expect(summary.difference).toBe(1.5);
+    expect(summary.chargedTotal).toBe(47.97);
+    expect(summary.passedCount).toBe(2);
+    expect(summary.wrongCount).toBe(1);
+    expect(summary.pendingCount).toBe(1);
   });
 });

@@ -21,6 +21,8 @@ export function shelfItem(overrides: Partial<ShoppingItem> = {}): ShoppingItem {
     imagePath: null,
     confidence: 0.9,
     createdAt: '2026-10-06T10:00:00Z',
+    checkoutStatus: 'pending',
+    checkoutChargedPrice: null,
     ...overrides,
   };
 }

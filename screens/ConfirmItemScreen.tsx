@@ -1,11 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { ErrorBanner } from '@/components/ErrorBanner';
+import { GlassView } from '@/components/GlassView';
+import { GradientCard } from '@/components/GradientCard';
 import { Header } from '@/components/Header';
 import { ItemForm } from '@/components/ItemForm';
 import { Screen } from '@/components/Screen';
@@ -21,13 +23,16 @@ import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { AppError, toUserMessage } from '@/utils/errors';
 import { formatBRL } from '@/utils/money';
 
-function Field({ label, value }: { label: string; value: string | null }) {
+function StatTile({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string | null }) {
   if (!value) return null;
   return (
-    <View style={styles.field}>
-      <AppText variant="label">{label}</AppText>
-      <AppText variant="bodyStrong">{value}</AppText>
-    </View>
+    <GlassView style={styles.tile}>
+      <View style={styles.tileIcon}>
+        <Ionicons name={icon} size={16} color={colors.primaryDark} />
+      </View>
+      <AppText variant="bodyStrong" numberOfLines={1}>{value}</AppText>
+      <AppText variant="caption" numberOfLines={1}>{label}</AppText>
+    </GlassView>
   );
 }
 
@@ -80,8 +85,8 @@ export default function ConfirmItemScreen() {
     <Screen
       footer={
         <View style={styles.actions}>
-          {!editing ? <Button title="Editar" variant="secondary" icon="create-outline" onPress={() => setEditing(true)} style={styles.flex} /> : null}
-          <Button title="Confirmar" icon="checkmark" size="lg" loading={saving || !shopping} onPress={confirm} style={styles.grow} />
+          {!editing ? <Button title="Editar" variant="secondary" icon="create-outline" size="lg" onPress={() => setEditing(true)} style={styles.flex} /> : null}
+          <Button title="Confirmar" variant="dark" icon="checkmark" size="lg" loading={saving || !shopping} onPress={confirm} style={styles.grow} />
         </View>
       }
     >
@@ -92,39 +97,50 @@ export default function ConfirmItemScreen() {
       ) : null}
 
       {!editing ? (
-        <Card style={styles.card}>
-          <View style={styles.topRow}>
-            {scan ? <Image source={{ uri: scan.image.uri }} style={styles.thumb} /> : null}
-            <View style={styles.flex}>
-              <AppText variant="label">Produto</AppText>
-              <AppText variant="title">{draft.name}</AppText>
-              {promoLabel ? <StatusPill label={promoLabel} tone="success" /> : null}
+        <View style={styles.card}>
+          {scan ? (
+            <View style={styles.photoWrap}>
+              <Image source={{ uri: scan.image.uri }} style={styles.photo} resizeMode="cover" />
+              <GlassView tone="dark" style={styles.confidence}>
+                <Ionicons name="sparkles" size={14} color={colors.lime} />
+                <AppText variant="caption" color={colors.white}>Leitura {Math.round(scan.reading.confidence * 100)}%</AppText>
+              </GlassView>
             </View>
+          ) : null}
+          <View style={styles.titleBlock}>
+            <AppText variant="title">{draft.name}</AppText>
+            {promoLabel ? <StatusPill label={promoLabel} tone="success" /> : null}
           </View>
-          <View style={styles.grid}>
-            <Field label="Marca" value={draft.brand} />
-            <Field label={draft.sizeUnit === 'l' || draft.sizeUnit === 'ml' ? 'Volume' : 'Peso'} value={displaySize(draft.sizeValue, draft.sizeUnit)} />
-            <Field label="Descrição" value={draft.description} />
+          <View style={styles.tiles}>
+            <StatTile icon="ribbon-outline" label="Marca" value={draft.brand} />
+            <StatTile
+              icon="cube-outline"
+              label={draft.sizeUnit === 'l' || draft.sizeUnit === 'ml' ? 'Volume' : 'Peso'}
+              value={displaySize(draft.sizeValue, draft.sizeUnit)}
+            />
+            <StatTile icon="scale-outline" label="Vendido por" value={draft.priceUnit === 'un' ? 'unidade' : draft.priceUnit} />
           </View>
-          {hasSale ? (
-            <View style={styles.priceRow}>
+          {draft.description ? <AppText variant="caption">{draft.description}</AppText> : null}
+          <GradientCard>
+            {hasSale ? (
+              <View style={styles.priceRow}>
+                <View>
+                  <AppText variant="label" color="rgba(255,255,255,0.8)">De</AppText>
+                  <AppText variant="price" color="rgba(255,255,255,0.75)" style={styles.strike}>{formatBRL(draft.shelfPrice)}</AppText>
+                </View>
+                <View style={styles.right}>
+                  <AppText variant="label" color="rgba(255,255,255,0.8)">Por</AppText>
+                  <AppText variant="priceLarge" color={colors.white}>{formatBRL(draft.promoPrice)}</AppText>
+                </View>
+              </View>
+            ) : (
               <View>
-                <AppText variant="label">Preço normal</AppText>
-                <AppText variant="price" color={colors.textMuted} style={styles.strike}>{formatBRL(draft.shelfPrice)}</AppText>
+                <AppText variant="label" color="rgba(255,255,255,0.8)">Preço na etiqueta{draft.priceUnit !== 'un' ? ` (por ${draft.priceUnit})` : ''}</AppText>
+                <AppText variant="priceLarge" color={colors.white}>{formatBRL(draft.shelfPrice)}</AppText>
               </View>
-              <View style={styles.right}>
-                <AppText variant="label">Preço promocional</AppText>
-                <AppText variant="priceLarge" color={colors.primaryDark}>{formatBRL(draft.promoPrice)}</AppText>
-              </View>
-            </View>
-          ) : (
-            <View>
-              <AppText variant="label">Preço{draft.priceUnit !== 'un' ? ` por ${draft.priceUnit}` : ''}</AppText>
-              <AppText variant="priceLarge">{formatBRL(draft.shelfPrice)}</AppText>
-            </View>
-          )}
-          {scan ? <AppText variant="caption">Confiança da leitura: {Math.round(scan.reading.confidence * 100)}%</AppText> : null}
-        </Card>
+            )}
+          </GradientCard>
+        </View>
       ) : (
         <>
           {scan ? (
@@ -147,12 +163,15 @@ const styles = StyleSheet.create({
   grow: { flex: 2 },
   actions: { flexDirection: 'row', gap: spacing.md },
   card: { gap: spacing.lg },
-  topRow: { flexDirection: 'row', gap: spacing.lg },
-  thumb: { width: 84, height: 84, borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
+  photoWrap: { borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.surfaceMuted },
+  photo: { width: '100%', aspectRatio: 1.35 },
+  confidence: { position: 'absolute', left: spacing.md, bottom: spacing.md, flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: radius.pill, paddingHorizontal: spacing.md, paddingVertical: 6 },
+  titleBlock: { gap: spacing.sm, alignItems: 'flex-start' },
+  tiles: { flexDirection: 'row', gap: spacing.sm },
+  tile: { flex: 1, padding: spacing.md, gap: 2, borderRadius: radius.md },
+  tileIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.xs },
   thumbSmall: { width: 56, height: 56, borderRadius: radius.sm },
   editThumbRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg },
-  field: { gap: 2, minWidth: '40%' },
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   right: { alignItems: 'flex-end' },
   strike: { textDecorationLine: 'line-through' },

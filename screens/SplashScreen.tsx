@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Animated, StyleSheet } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { Logo } from '@/components/Logo';
 import { isSupabaseConfigured } from '@/constants/env';
-import { colors, spacing } from '@/constants/theme';
+import { colors, gradients, spacing } from '@/constants/theme';
 import { useAuthStore } from '@/store/authStore';
 
 export default function SplashScreen() {
@@ -23,17 +24,17 @@ export default function SplashScreen() {
   const translateY = fade.interpolate({ inputRange: [0, 1], outputRange: [12, 0] });
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={gradients.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.container}>
       <Animated.View style={[styles.center, { opacity: fade, transform: [{ translateY }] }]}>
         <Logo size={96} inverted />
         <AppText variant="display" color={colors.white}>PreçoCerto</AppText>
         <AppText variant="body" color="rgba(255,255,255,0.85)">Confira. Compare. Não pague a mais.</AppText>
       </Animated.View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   center: { alignItems: 'center', gap: spacing.md },
 });

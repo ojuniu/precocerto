@@ -5,10 +5,12 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { ErrorBanner } from '@/components/ErrorBanner';
+import { GlassView } from '@/components/GlassView';
+import { GradientCard } from '@/components/GradientCard';
 import { IconButton } from '@/components/IconButton';
 import { Logo } from '@/components/Logo';
 import { Screen } from '@/components/Screen';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, gradients, spacing } from '@/constants/theme';
 import { getPaymentProvider, PLANS, PREMIUM_HIGHLIGHTS } from '@/services/subscription';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { toUserMessage } from '@/utils/errors';
@@ -49,12 +51,16 @@ export default function PremiumScreen() {
       <View style={styles.close}>
         <IconButton icon="close" label="Fechar" onPress={() => router.back()} />
       </View>
-      <View style={styles.hero}>
-        <Logo size={64} />
-        <AppText variant="display">PreçoCerto Premium</AppText>
-        <AppText variant="body" color={colors.textSecondary}>Seu fiscal de preços sem limites.</AppText>
-      </View>
-      <View style={styles.list}>
+      <GradientCard colors={gradients.ink}>
+        <Logo size={56} inverted />
+        <AppText variant="display" color={colors.white}>PreçoCerto <AppText variant="display" color={colors.lime}>Premium</AppText></AppText>
+        <AppText variant="body" color="rgba(255,255,255,0.8)">Seu fiscal de preços sem limites.</AppText>
+        <AppText variant="priceLarge" color={colors.white}>
+          {formatBRL(premium.priceMonthly)}
+          <AppText variant="body" color="rgba(255,255,255,0.7)"> /mês</AppText>
+        </AppText>
+      </GradientCard>
+      <GlassView style={styles.list}>
         {PREMIUM_HIGHLIGHTS.map((feature) => (
           <View key={feature} style={styles.feature}>
             <View style={styles.check}>
@@ -63,7 +69,7 @@ export default function PremiumScreen() {
             <AppText variant="bodyStrong">{feature}</AppText>
           </View>
         ))}
-      </View>
+      </GlassView>
       <AppText variant="caption">
         Plano gratuito: até {PLANS.free.monthlyProductLimit} produtos por mês, leitura de etiquetas, conferência de cupom e histórico dos últimos {PLANS.free.historyDays} dias.
       </AppText>
@@ -74,8 +80,7 @@ export default function PremiumScreen() {
 
 const styles = StyleSheet.create({
   close: { alignItems: 'flex-end' },
-  hero: { gap: spacing.sm },
-  list: { gap: spacing.md, backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.xl },
+  list: { gap: spacing.md, padding: spacing.xl },
   feature: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   check: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
 });

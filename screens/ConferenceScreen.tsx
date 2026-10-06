@@ -14,11 +14,13 @@ import { PendingMatchCard } from '@/components/PendingMatchCard';
 import { Screen } from '@/components/Screen';
 import { useToast } from '@/components/Toast';
 import { colors, radius, spacing } from '@/constants/theme';
+import { summarizeCheckout } from '@/services/comparison/checkout';
 import type { ComparisonLine } from '@/services/comparison/compare';
+import { itemTitle } from '@/services/shopping/itemDraft';
 import { useConferenceStore } from '@/store/conferenceStore';
 import { formatDate } from '@/utils/date';
 import { toUserMessage } from '@/utils/errors';
-import { formatBRL } from '@/utils/money';
+import { formatBRL, formatSignedBRL } from '@/utils/money';
 
 function Section({ title, lines, render }: { title: string; lines: ComparisonLine[]; render: (line: ComparisonLine) => ReactNode }) {
   if (lines.length === 0) return null;
@@ -64,6 +66,27 @@ export default function ConferenceScreen() {
   const { shopping, receipt, summary, warnings } = conference;
   const by = (status: ComparisonLine['status']) => summary?.lines.filter((l) => l.status === status) ?? [];
   const unmatchedReceipt = by('not_photographed');
+  const checkout = summarizeCheckout(conference.items);
+  const checkoutCard = checkout.passedCount > 0 ? (
+    <Card tone={checkout.wrongCount > 0 ? 'danger' : 'success'} style={styles.checkoutCard}>
+      <View style={styles.infoRow}>
+        <AppText variant="heading">Conferido no caixa</AppText>
+        <AppText variant="caption">{checkout.passedCount} de {conference.items.length}</AppText>
+      </View>
+      {checkout.wrongLines.length === 0 ? (
+        <AppText variant="body" color={colors.textSecondary}>Nenhum preço errado foi registrado no caixa.</AppText>
+      ) : (
+        checkout.wrongLines.map((line) => (
+          <View key={line.item.id} style={styles.infoRow}>
+            <AppText variant="bodyStrong" style={styles.flex} numberOfLines={1}>{itemTitle(line.item)}</AppText>
+            <AppText variant="bodyStrong" color={colors.danger}>
+              {line.chargedTotal === null ? 'preço errado' : formatSignedBRL(line.difference)}
+            </AppText>
+          </View>
+        ))
+      )}
+    </Card>
+  ) : null;
 
   return (
     <Screen
@@ -89,10 +112,18 @@ export default function ConferenceScreen() {
       />
 
       {!receipt || !summary ? (
-        <EmptyState icon="receipt-outline" title="Cupom ainda não conferido" message="Fotografe o cupom fiscal para comparar os preços." />
+        <>
+          {checkoutCard}
+          <EmptyState
+            icon="receipt-outline"
+            title="Cupom ainda não conferido"
+            message="Fotografe o cupom fiscal para comparar cada linha com o preço da etiqueta."
+          />
+        </>
       ) : (
         <>
           <ConferenceSummary summary={summary} />
+          {checkoutCard}
           {warnings.map((w) => (
             <ErrorBanner key={w} tone="warning" message={w} />
           ))}
@@ -148,7 +179,7 @@ export default function ConferenceScreen() {
             render={(line) => <ComparisonLineCard key={line.key} line={line} />}
           />
 
-          <Card style={styles.receiptInfo}>
+          <Card tone="glass" style={styles.receiptInfo}>
             <View style={styles.infoRow}>
               <AppText variant="caption">Total do cupom</AppText>
               <AppText variant="bodyStrong">{formatBRL(receipt.total)}</AppText>
@@ -202,6 +233,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   section: { gap: spacing.md },
   receiptInfo: { gap: spacing.sm },
+  checkoutCard: { gap: spacing.sm },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between' },
   modalBackdrop: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
   sheet: {
