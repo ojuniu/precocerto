@@ -50,7 +50,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.jest.json",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build:apk": "npx eas-cli@latest build -p android --profile preview"
   },
   "private": true,
   "jest": {

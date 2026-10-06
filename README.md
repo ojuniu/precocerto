@@ -173,6 +173,23 @@ npx supabase functions serve ai-vision --env-file supabase/functions/.env
 
 Use a URL e a anon key que o `supabase start` imprime no `.env` do app. No celular, troque `127.0.0.1` pelo IP da sua máquina na rede.
 
+### Gerar um .apk para instalar no Android
+
+O build roda na nuvem da Expo (EAS), sem precisar de Android Studio. Uma conta gratuita em expo.dev basta.
+
+```bash
+npx eas-cli@latest login
+npx eas-cli@latest init          # vincula o projeto à sua conta (só na primeira vez)
+
+# As variáveis do app vão para o EAS (o .env local não é enviado no build)
+npx eas-cli@latest env:create --environment preview --name EXPO_PUBLIC_SUPABASE_URL --value https://SEU-PROJETO.supabase.co --visibility plaintext
+npx eas-cli@latest env:create --environment preview --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value SUA_ANON_KEY --visibility plaintext
+
+npm run build:apk                # perfil "preview" do eas.json → .apk
+```
+
+No fim, o EAS mostra um link e um QR code: abra no celular, baixe o .apk e instale (o Android pede para permitir "instalar apps desconhecidos"). Para a Play Store use `npx eas-cli@latest build -p android --profile production`, que gera .aab.
+
 ## 5. Variáveis de ambiente
 
 App (`.env`, públicas):

@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#F4F5F7",
+    "backgroundColor": "#F1F4EE",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.precocerto.app",
@@ -19,7 +19,7 @@
     "android": {
       "package": "com.precocerto.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0E9F6E",
+        "backgroundColor": "#2FA552",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -38,7 +38,7 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 160,
           "resizeMode": "contain",
-          "backgroundColor": "#0E9F6E"
+          "backgroundColor": "#2FA552"
         }
       ],
       [
